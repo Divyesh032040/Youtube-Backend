@@ -4,11 +4,9 @@
   "description": "youtube backend project - final repo project ",
   "main": "index.js",
   "type": "module",
-
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-
   "keywords": [
     "divyeshMaster",
     "java",
@@ -17,12 +15,10 @@
     "backend",
     "chai"
   ],
-
   "author": "divyesh parmar",
-
   "license": "ISC",
-
   "devDependencies": {
-    "nodemon": "^3.1.0"
+    "nodemon": "^3.1.0",
+    "prettier": "^3.2.5"
   }
 }

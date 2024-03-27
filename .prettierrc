@@ -1,0 +1,6 @@
+{
+    "dingleQuote":false,
+    "trailingComma": "es5",
+    "bracketSpacing": true,
+    "tabWidth": 2
+}
