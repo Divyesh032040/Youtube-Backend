@@ -21,7 +21,10 @@ const asyncHandler = (requestHandler) => {
 export { asyncHandler };
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6a7ec0118dea77751368c1ffe81468bfe99bbd68
 // const asyncHandler = (fn) => async (req, res, next) => {
 //     try {
 //         await fn(req, res, next)
@@ -32,7 +35,6 @@ export { asyncHandler };
 //         })
 //     }
 // }
-
 
 
 
