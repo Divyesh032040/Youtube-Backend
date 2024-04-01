@@ -22,14 +22,15 @@ export { asyncHandler };
 
 
 
-// const asyncHandler = (fn) => {
-//    try {
-//     async (req,res,next) => {
-//         await fn(req,res,next)
+// const asyncHandler = (fn) => async (req, res, next) => {
+//     try {
+//         await fn(req, res, next)
+//     } catch (error) {
+//         res.status(err.code || 500).json({
+//             success: false,
+//             message: err.message
+//         })
 //     }
-//    } catch (error) {
-//     throw error
-//    }
 // }
 
 
