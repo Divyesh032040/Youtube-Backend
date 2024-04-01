@@ -55,7 +55,7 @@ const UserSchema = new Schema(
 )
 
 //password encryption if its changed
-UserSchema.pre("save" , async function(next){      //use function for this reference
+UserSchema.pre("save" , async function(next){      //use (function) for this reference
     if( ! this.isModified("password") ) next ()
     this.password = bcryptjs.hash(this.password , 10 )
     next()
