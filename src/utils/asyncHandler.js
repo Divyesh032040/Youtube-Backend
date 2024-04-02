@@ -17,7 +17,6 @@ const asyncHandler = (requestHandler) => {
     };
 };
 
-// Exporting asyncHandler for use in other files
 export { asyncHandler };
 
 
