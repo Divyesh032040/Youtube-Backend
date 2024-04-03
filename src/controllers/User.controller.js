@@ -10,7 +10,7 @@ const registerUser = asyncHandler(async (req,res) => {
     
     //get data from user 
      const {fullName,username,email,password} = req.body
-     console.log(req.body)
+    // console.log(req.body)
 
      //validate user detail - we can all apply if-else condition on each state
      if([fullName,username,email,password].some((field)=>field?.trim()==="")){
@@ -19,17 +19,17 @@ const registerUser = asyncHandler(async (req,res) => {
 
      //check if use is already registered or not ?
      //we can access all users of data base via UserSchema which is User 
-    const existUser = User.findOne({
+    const existUser = await User.findOne({
         $or: [{username},{email}]
     })
     if(existUser){
         throw new ApiError(406,"user with this username or password already exist")
     }
-    console.log(`existUser: ${existUser}`)
+
 
     //handle images : avatar
     const avatarLocalPath = req.files?.avatar[0]?.path
-    const coverImageLocalPath = req.files?.coverImage[0]?.path
+    const coverImageLocalPath = req.files?.coverimage[0]?.path
 
     //validation for avatar
     if(!avatarLocalPath) throw new ApiError(400,"avatar image is required")
@@ -51,15 +51,16 @@ const registerUser = asyncHandler(async (req,res) => {
         email,
         password,
         avatar : avatar?.url,
-        coverImage : coverImage?.url || "",
+        coverimage : coverImage?.url || "",
     })
 
-    const createUser = User.findOne(user._id).select("-password - refreshToken");
+    const createdUser = await User.findOne({ _id: user._id }).select("-password -refreshToken");
 
-    if(!createUser)throw new ApiError(500,"something want wrong while registering user")
+
+    if(!createdUser)throw new ApiError(500,"something want wrong while registering user")
     
     return res.status(201).json(
-        new ApiResponse (201 , createUser , "user registered successfully")
+        new ApiResponse(200, createdUser, "User registered Successfully")
     )
 
 

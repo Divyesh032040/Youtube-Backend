@@ -53,13 +53,13 @@ const UserSchema = new Schema(
 //password encryption if its changed
 UserSchema.pre("save" , async function(next){      //use (function) for this reference
     if( ! this.isModified("password") ) next ()
-    this.password = bcryptjs.hash(this.password , 10 )
-    next()
+    this.password = bcryptjs.hashSync(this.password , 10 )    //bcryptjs -> hashSync 
+    next()                                                    //bcrypt -> hash
 })
 
 //add custom method (isPasswordCorrect) in UserSchema for password validation 
 UserSchema.methods.isPasswordCorrect = async function (password) {
-    return await bcryptjs.compare(password , this.password)
+    return await bcryptjs.compareSync(password , this.password)
 }
 
 //method for generate access token 
