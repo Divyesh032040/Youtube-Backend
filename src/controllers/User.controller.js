@@ -19,26 +19,37 @@ const registerUser = asyncHandler(async (req,res) => {
 
      //check if use is already registered or not ?
      //we can access all users of data base via UserSchema which is User 
-    const existUser = await User.findOne({
-        $or: [{username},{email}]
+     const existedUser = await User.findOne({
+        $or: [{ username }, { email }]
     })
-    if(existUser){
-        throw new ApiError(406,"user with this username or password already exist")
+
+    if (existedUser) {
+        throw new ApiError(409, "User with email or username already exists")
     }
 
 
     //handle images : avatar
-    const avatarLocalPath = req.files?.avatar[0]?.path
-    const coverImageLocalPath = req.files?.coverimage[0]?.path
+    const avatarLocalPath = req.files?.avatar?.[0]?.path;
+
+    console.log(avatarLocalPath)
+
+    
+   // const coverImageLocalPath = req.files?.coverimage[0]?.path
+   let coverImageLocalPath;
+   if (req.files && Array.isArray(req.files.coverimage) && req.files.coverimage.length > 0) {
+       coverImageLocalPath = req.files.coverimage[0].path
+   }
 
     //validation for avatar
-    if(!avatarLocalPath) throw new ApiError(400,"avatar image is required")
-
     //upload file to cloudinary
     const avatar = await uploadOnCloudinary(avatarLocalPath)
-
     //upload cover image
     const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+    
+    if(!avatarLocalPath) {
+        throw new ApiError(400,"avatar image is required")
+    }
+  
 
     //validate is really avatar is there or not ?
     if(!avatar) throw new ApiError(400,"avatar image is required")
@@ -47,7 +58,7 @@ const registerUser = asyncHandler(async (req,res) => {
 
    const user = await User.create({
         fullName,
-        username : username.toLowerCase(),
+        username : username,
         email,
         password,
         avatar : avatar?.url,
@@ -81,8 +92,8 @@ export {registerUser}
 //get data from user  - done
 //validate data - not empty  
 //check if user is already exist - via username or email
-//check for avatar and cover image
-//upload image and cover photo on cloudinary via middle were "multer"
+//check for avatar and cover image    
+//upload image and cover photo on cloudinary via middle were "multer"       
 //create a user object with user data and image,avatar url from d=cloudinary for db
 //upload it into db
 
