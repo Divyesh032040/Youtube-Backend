@@ -3,6 +3,7 @@ import {ApiError} from "../utils/ErrorHandler.js"
 import {User} from "../models/User.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
+import Jwt from "jsonwebtoken"
 
 const generateRefreshTokenAndAccessToken = async (userId)=>{
 
@@ -22,6 +23,7 @@ const generateRefreshTokenAndAccessToken = async (userId)=>{
    }
 
 }
+
 
 //her we write main response of request / main logic of in-coming https request
 
@@ -99,6 +101,7 @@ const registerUser = asyncHandler(async (req,res) => {
 
 
 
+//login user
 const LoginUser = asyncHandler(async(req,res)=>{
     //get username and password from user 
     const {username , email , password} = req.body
@@ -152,6 +155,7 @@ const LoginUser = asyncHandler(async(req,res)=>{
 
 
 
+
 //log out user
 const logOutUser = asyncHandler(async(req,res)=>{
     //remove refresh token from user data in DB
@@ -178,10 +182,71 @@ const logOutUser = asyncHandler(async(req,res)=>{
 })
 
 
+
+
+//function for regenerate user's access toke via its refresh token
+const accessRefreshToken = asyncHandler(async(req,res)=>{
+    const incomingRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken
+
+    if(!accessRefreshToken){
+        throw new ApiError(401,"unauthorized request")
+    }
+
+    //verify user refresh token via jwt.verify() function
+  try {
+     const decodedRefreshToken = Jwt.verify(incomingRefreshToken , process.env.REFRESH_TOKEN_SECRET)
+  
+     if(!decodedRefreshToken){
+      throw new ApiError(401 , "invalid refreshToken");
+     }
+  
+    const user = await User.findById(decodedRefreshToken?._id)
+  
+    if(!user){
+      throw new ApiError(401 , "Invalid RefreshToken")
+    }
+  
+    //verify incoming incomingRefreshToken and refreshToken which we save in user DB while creating generate while 
+  
+    if(decodedRefreshToken !== user?.refreshToken){
+      throw new ApiError(401 , "Refresh token is expired or used")
+    }
+  
+    // now user is completely verify and we have to generate new token for that and send user in cookies
+  
+    const {newRefreshToken , newAccessToken } = await generateRefreshTokenAndAccessToken(user._id)
+  
+    // now send in cookies
+    const options = {
+      httpOnly:true,
+      secure:true
+    }
+  
+    return res
+    .status(200)
+    .cookies("refreshToken",newRefreshToken)
+    .cookies("accessToken",newAccessToken)
+    .json(new ApiResponse(200,{newRefreshToken , newAccessToken },"access token re-generated"))
+  
+  
+  
+  } catch (error) {
+    throw new ApiError(400,error?.message || "invalid access token")
+  }
+
+})
+
+
+
+
+
+
+
 export {
     registerUser,
     LoginUser,
-    logOutUser
+    logOutUser,
+    accessRefreshToken
 }
 
 
@@ -208,6 +273,12 @@ export {
 -her we don't have a username / email from user so access that user from DB , we have to design a middleware , which takes cookies from user about user info
 - after know about user we will remove refresh token from user object from DB  
 
+
+{refreshAccessToken}
+
+- access user's refresh token 
+{"NOTE":"to verify refresh/access token we have a method called jwt.verify(R/A token , R/A token secret_key) - it return bool value value "}
+-note : jwt contain 3 things : header , payload data , verify signature (HPS)  
 
 
 
