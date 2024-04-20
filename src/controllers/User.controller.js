@@ -446,11 +446,59 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
         throw ApiError(400,"channel dose not exist")
     }
 
-    res.status(200)
+    return res.status(200)
     .json(
        new ApiResponse(200, channel[0] , "user channel fetched successfully")
     )
 
+})
+
+//nested aggregation pipeline for get users watch history 
+const watchHistory = asyncHandler(async(req,res)=>{
+        const user = await User.aggregate([
+            {
+                $match:{
+                    _id: new mongoose.Types.ObjectId(req.user._id)
+                }
+            },
+            {
+                $lookup:{
+                    from:"videos",
+                    localField:"watchHistory",
+                    foreignField:"_id",
+                    as:"WatchHistory",
+
+                    pipeline:[{
+                        $lookup:{
+                            from:"users",
+                            localField:"owner",
+                            foreignField:"_id",
+                            as:"owner",
+
+                            pipeline:[{
+                                $project:{
+                                    username:1,
+                                    fullName:1,
+                                    avatar:1
+                                }
+                            }]
+                        }
+                    }]
+                },
+                
+            },
+            {
+                $addFields:{
+                    owner:{
+                        $first:"$owner"
+                    }
+                }
+            }
+        ])
+
+        return res.status(200).json(
+            new ApiResponse(200,user[0].watchHistory)
+        )
 })
 
 export {
@@ -463,7 +511,8 @@ export {
     UserAccountDetailUpdate,
     updateUserAvatar,
     updateUserCover,
-    getUserChannelProfile
+    getUserChannelProfile,
+    watchHistory
 }
 
 
