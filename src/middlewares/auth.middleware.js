@@ -6,7 +6,7 @@ import { User } from "../models/User.model.js";
 
 export const verifyJWT = asyncHandler(async (req, _ ,next) =>{
     try {
-        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ","") ;
+        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ","");
         console.log(token)
         if(! token){
             throw new ApiError(404,"Unauthorized request")
@@ -23,7 +23,7 @@ export const verifyJWT = asyncHandler(async (req, _ ,next) =>{
        }
     
        //after remove password and refresh token from that user detail comes from DB , we will pass it into user req and call next()
-       req.user = user
+       req.user = user    //via this we provide all user details in req
     
        next()
     } catch (error) {
