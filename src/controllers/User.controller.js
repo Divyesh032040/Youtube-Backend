@@ -22,9 +22,6 @@ const generateRefreshTokenAndAccessToken = async (userId)=>{
    }
 
 }
-
-
-
 //her we write main response of request / main logic of in-coming https request
 const registerUser = asyncHandler(async (req,res) => {
     //get data from user 
@@ -45,8 +42,6 @@ const registerUser = asyncHandler(async (req,res) => {
     if (existedUser) {
         throw new ApiError(409, "User with email or username already exists")
     }
-
-
     //handle images : avatar
     const avatarLocalPath = req.files?.avatar?.[0]?.path;   //multer adds files
 
@@ -156,7 +151,7 @@ const logOutUser = asyncHandler(async(req,res)=>{
     await User.findByIdAndUpdate(
         req.user._id , 
         {
-            $set : {refreshToken : 1}
+            $unset : {refreshToken : 1}
         },
         {
             new:true
