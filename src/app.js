@@ -26,6 +26,8 @@ import userRouter from "./routes/User.routes.js"
 //route declaration 
 app.use("/api/v1/users",userRouter);
 
+app.use("/api/v1/tweet",tweetRouter);
+
 
 
 export { app }
