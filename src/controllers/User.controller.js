@@ -32,7 +32,7 @@ const registerUser = asyncHandler(async (req,res) => {
      if([fullName,username,email,password].some((field)=>field?.trim()==="")){
         throw ApiError(400,"all fields are required")
      }
-
+     
      //check if use is already registered or not ?
      //we can access all users of data base via UserSchema which is User 
      const existedUser = await User.findOne({

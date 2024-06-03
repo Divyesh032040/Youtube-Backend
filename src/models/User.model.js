@@ -97,7 +97,7 @@ UserSchema.methods.generateRefreshToken = function (){
 
 export const User = mongoose.model("User",UserSchema) //users
 
-//database use for store video , avatar , coverImage etc is "cloudinery(free)"
+//database use for store video , avatar , coverImage etc is "cloudinery (free)"
 
 //IMPORTANT NOTE : this all methods which we create are available with our "user" we stored in DB
 //where other methods like findOne() etc are available via mongoDB's mongoose 
