@@ -25,7 +25,7 @@ const videoSchema = new Schema.model({
     },
     views:{
         type:Number,
-       default:0
+        default:0
     },
     isPublished:{
         type:Boolean,
