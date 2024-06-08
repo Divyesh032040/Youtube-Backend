@@ -17,3 +17,5 @@ tweetRouter.get("/user/:userId", verifyJWT , getUserTweets);
 // Route to update or delete a specific tweet
 tweetRouter.patch("/:tweetId", verifyJWT , updateTweet);
 tweetRouter.delete("/:tweetId", verifyJWT , deleteTweet);
+
+export default tweetRouter;
