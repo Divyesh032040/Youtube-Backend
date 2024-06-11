@@ -1,5 +1,5 @@
 import mongoose, { isValidObjectId } from "mongoose"
-import {Tweet} from "../models/tweet.model.js"
+import {tweet} from "../models/tweet.model.js"
 import {User} from "../models/User.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
@@ -11,7 +11,7 @@ const createTweet = asyncHandler(async (req, res) => {
     if(!content){
         return new ApiError(400 , "content is required");
     }
-    const tweet = await Tweet.create({
+    const tweet = await tweet.create({
         content , 
         owner : req.user?._id 
     })
@@ -36,7 +36,7 @@ const updateTweet = asyncHandler(async (req, res) => {
         throw new ApiError(400,"Content is not provided");
     }
 
-    const tweet = await Tweet.findById(tweetId);
+    const tweet = await tweet.findById(tweetId);
 
     if(!tweet){
        throw new ApiError(400,"tweet not found")
@@ -82,7 +82,7 @@ const deleteTweet = asyncHandler(async (req, res) => {
         throw new ApiError(400,"only owner can delete tweet")
     }
 
-    await Tweet.findByIdAndDelete(tweetId);
+    await tweet.findByIdAndDelete(tweetId);
 
     res.status(200)
     .json(new ApiResponse(200,{tweetId},"tweet delete successfully"))
@@ -95,7 +95,7 @@ const getUserTweets = asyncHandler(async (req, res) => {
     if(!isValidObjectId(userId)){
         throw new ApiError(400,"userId is required");
     }
-    const allTweet = await Tweet.aggregate([
+    const allTweet = await tweet.aggregate([
         //stage:1 filer find user by user Id in owner collection
         {
             $match : { owner : new mongoose.Types.ObjectId(userId) }
