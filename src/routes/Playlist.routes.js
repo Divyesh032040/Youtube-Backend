@@ -6,9 +6,9 @@ import { createPlaylist,
         removeVideoFromPlaylist,
         deletePlaylist,
         updatePlaylist  } 
-        from "../controllers/Playlist.controller";
-import { verifyJWT } from "../middlewares/auth.middleware";
-import { upload } from "../middlewares/multer.middleware";
+        from "../controllers/Playlist.controller.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { upload } from "../middlewares/multer.middleware.js";
 
 const playlistRouter = Router();
 

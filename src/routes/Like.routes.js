@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { verifyJWT } from "../middlewares/auth.middleware";
-import { getLikedVideos , toggleCommentLike , toggleTweetLike , toggleVideoLike  } from "../controllers/Like.controller";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { getLikedVideos , toggleCommentLike , toggleTweetLike , toggleVideoLike  } from "../controllers/Like.controller.js";
 
 
 const likeRouter = Router();

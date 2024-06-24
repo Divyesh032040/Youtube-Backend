@@ -3,7 +3,7 @@ import {Playlist, playList} from "../models/playlist.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
-import { video } from "../models/Video.model.js"
+import {video} from "../models/Video.model.js"
 
 
 const createPlaylist = asyncHandler(async (req, res) => {

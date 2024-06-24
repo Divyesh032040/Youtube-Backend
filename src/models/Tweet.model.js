@@ -11,7 +11,6 @@ const tweetSchema = new Schema({
         required:true
     }
 
-
 },{timestamps:true})
 
 export const tweet = mongoose.model("Tweet",tweetSchema)
