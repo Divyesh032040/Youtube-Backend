@@ -39,9 +39,80 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     const {channelId} = req.params
 
-   
+    if(!isValidObjectId(channelId)){
+        throw new ApiError(400,"invalid channelID");
+    }
 
+    channelId = new mongoose.Types.ObjectId(channelId);
 
+    const subscribers = await Subscription.aggregate([
+        //stage 1
+        {
+            $match: {channel : channelId}
+        },
+    //stage 2 : pipeline for get subscriber , subscribedToSubscriber , subscriberCount
+        {
+            $lookup:{
+                from:"User",
+                localField:"subscribers",
+                foreignField:"_id",
+                as:"subscribers",
+
+                $pipeline:[
+                    {
+                        $lookup:{
+                            from:"subscription",
+                            localField:"_id",
+                            foreignField:"channel",
+                            as:"subscribedToSubscribers"
+                        }
+                    },
+                    {
+                        $addFields : {
+
+                            subscribedToSubscribers : {
+
+                                $cond:{
+                                    $if:{
+                                        $in:[channelId,"$subscribedToSubscribers.subscriber"]
+                                        },
+                                        $then:true,
+                                        $else:false
+                                    }
+                            },
+
+                            $subscriberCount : {
+                            $size : "$subscribedToSubscribers"
+                            }
+                        },
+                    },
+                ],
+            },
+        },
+        //stage 3
+        {
+            $unwind:"$subscribers"
+        },
+
+        //stage 4
+        {
+            $project:{
+                _id:0,
+                subscriber:{
+                    _id: 1,
+                    username: 1,
+                    fullName: 1,
+                    "avatar.url": 1,
+                    subscribedToSubscriber: 1,
+                    subscribersCount: 1,
+                },
+            },
+        },
+])
+
+    return res.status(200).json(
+         new ApiResponse(200,subscribers , "fetch subscribers details successfully")
+    );
 })
 
 // controller to return channel list to which user has subscribed
