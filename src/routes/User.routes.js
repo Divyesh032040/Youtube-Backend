@@ -21,7 +21,7 @@ userRouter.route("/logout").post( verifyJWT , logOutUser)
 
 userRouter.route("/refreshToken").post(accessRefreshToken)
 
-userRouter.route("update-user-password").post(verifyJWT,UpdateUserPassword)
+userRouter.route("/update-user-password").post(verifyJWT,UpdateUserPassword)
 
 userRouter.route("/get-currant-user").get(verifyJWT,getCurrentUser)
 
@@ -40,20 +40,3 @@ userRouter.route("/watch-history").get(verifyJWT,watchHistory)
 export default userRouter
 
 
-/*
-multer add files in req , to handle files and its looks accordingly
-coverimage: [
-    {
-      fieldname: 'coverimage',
-      originalname: 'cynthia.png',
-      encoding: '7bit',
-      mimetype: 'image/png',
-      destination: './public/temp',
-      filename: 'cynthia.png',
-      path: 'public\\temp\\cynthia.png',
-      size: 158364
-    }
-  ]
-
-
-*/

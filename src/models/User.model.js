@@ -51,15 +51,30 @@ const UserSchema = new Schema(
 )
 
 //password encryption if its changed
-UserSchema.pre("save" , async function(next){      //use (function) for this reference
-    if( ! this.isModified("password") ) next ()
-    this.password = bcryptjs.hashSync(this.password , 10 )    //bcryptjs -> hashSync 
-    next()                                                    //bcrypt -> hash
-})
+// UserSchema.pre("save" , async function(next){      //use (function) for this reference
+//     if( ! this.isModified("password") ) next ()
+//     this.password = bcryptjs.hashSync(this.password , 10 )    //bcryptjs -> hashSync 
+//     next()                                                    //bcrypt -> hash
+// })
+
+UserSchema.pre('save', async function(next) {
+    if (!this.isModified('password')) return next();
+    const salt = await bcryptjs.genSalt(10);
+    this.password = await bcryptjs.hash(this.password, salt);
+    next();
+  });
 
 //add custom method (isPasswordCorrect) in UserSchema for password validation 
+// UserSchema.methods.isPasswordCorrect = async function (password) {
+//     return bcryptjs.compareSync(password , this.password)
+// }
 UserSchema.methods.isPasswordCorrect = async function (password) {
-    return bcryptjs.compareSync(password , this.password)
+    try {
+        console.log(password)
+        return bcryptjs.compareSync(password , this.password);
+    } catch (error) {
+        throw new Error(error);
+    }
 }
 
 //method for generate access token 
@@ -95,7 +110,10 @@ UserSchema.methods.generateRefreshToken = function (){
     )
 }
 
-export const User = mongoose.model("User",UserSchema) //users
+const User = mongoose.models.User || mongoose.model("User", UserSchema);
+
+export {User}
+// export const User = mongoose.model("User",UserSchema) //users
 
 //database use for store video , avatar , coverImage etc is "cloudinery (free)"
 

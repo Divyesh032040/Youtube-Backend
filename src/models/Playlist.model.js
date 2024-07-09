@@ -1,21 +1,21 @@
-import mongoose, { Schema, Types } from "mongoose";
+import mongoose , {Schema} from 'mongoose'
 
 const playLitSchema = new Schema({
     name:{
-        Type:String,
+        type:String,
         required:true ,
     },
     description:{
-        Type:String,
+        type:String,
         required:true ,
     },
     owner:{
-        Type:Schema.Types.ObjectId,
+        type:Schema.Types.ObjectId,
         ref:"User"
     },
     video:[
         {
-            Type:Schema.Types.ObjectId,
+            type:Schema.Types.ObjectId,
             ref:"Video"
         }
     ]

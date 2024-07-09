@@ -2,10 +2,7 @@ import express from "express"
 import cookieParser from "cookie-parser"
 import cors from 'cors'
 
-
 const app = express()
-
-
 
 app.use(cors({
     origin:process.env.CORS_ORIGIN ,
@@ -27,7 +24,8 @@ import playlistRouter from "./routes/Playlist.routes.js"
 import likeRouter from "./routes/Like.routes.js"
 import commentRouter from "./routes/Comment.router.js"
 import healthCheckerRouter from "./routes/HealthChecker.router.js"
-
+import subscriberRouter from "./routes/Subscription.routes.js"
+import videoRouter from "./routes/Video.routes.js"
 
 //route declaration 
 app.use("/api/v1/users",userRouter);
@@ -41,6 +39,10 @@ app.use("/api/v1/Like",likeRouter);
 app.use("/api/v1/comment" , commentRouter);
 
 app.use("/api/v1/healthCheck" , healthCheckerRouter);
+
+app.use('/api/v1/subscription', subscriberRouter);
+
+app.use("/api/v1/video" , videoRouter)
 
 
 
