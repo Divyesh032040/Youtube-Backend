@@ -46,6 +46,6 @@ videoSchema.plugin(mongooseAggregatePaginate);
 
 //  const video = model("Video", videoSchema);
 
-const video = models.Video || model("Video", videoSchema);
+export const video = models.Video || model("Video", videoSchema);
 
-export { video }
+// export { video }
