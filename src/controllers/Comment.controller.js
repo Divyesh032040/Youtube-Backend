@@ -3,9 +3,8 @@ import {Comment} from "../models/comment.model.js"
 import {ApiError} from "../utils/ErrorHandler.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
-import {Like} from "../models/Like.model.js"
 import { video } from "../models/Video.model.js"
-
+import { Like } from "../models/like.model.js"
 
 
 const getVideoComments = asyncHandler(async (req, res) => {
@@ -27,7 +26,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
        },
        {
         $lookup:{
-            from:users,
+            from:"User",
             localField:"owner",
             foreignField:"_Id",
             as:"owner"
@@ -45,7 +44,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
        {
         $addFields:{
             likeCount:{
-                $size : "like"
+                $size : "$like"
             },
             owner:{
                 $first:"$owner"
@@ -84,7 +83,7 @@ const option = {
     limit: parseInt(limit , 10)
 }
 
-const comments = Comment.aggregatePaginate(
+const comments = await Comment.aggregatePaginate(
     commentAggregate ,
     option
 )
@@ -135,18 +134,18 @@ const updateComment = asyncHandler(async (req, res) => {
         throw new ApiError(400,"comment not found");
     }
 
-    const comment = await comment.findById(commentId);
+    const _comment = await Comment.findById(commentId);
 
-    if(!comment){
+    if(!_comment){
         throw new ApiError(400,"comment not found");
     }
 
-    if(comment?.owner.toString() != req.user?._id.toString()){
+    if(_comment?.owner.toString() != req.user?._id.toString()){
         throw new ApiError(400, "only comment owner can edit their comment");
     }
 
-    const updatedComment = await comment.findByIdAndUpdate(
-        comment?._id , 
+    const updatedComment = await Comment.findByIdAndUpdate(
+        _comment?._id , 
         {
             $set:{content}
         },
@@ -157,7 +156,7 @@ const updateComment = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Failed to edit comment please try again");
     }
 
-    return res.status(200).jso( 
+    return res.status(200).json( 
         new ApiResponse(200, updatedComment, "Comment edited successfully")
     )
 

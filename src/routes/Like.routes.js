@@ -11,8 +11,8 @@ likeRouter.route("/videos").get(getLikedVideos);
 
 likeRouter.route("/toggle/t/:tweetId").post(toggleTweetLike);
 
-likeRouter.route("toggle/c/:commentId").post(toggleCommentLike);
+likeRouter.route("/toggle/c/:commentId").post(toggleCommentLike);
 
-likeRouter.route("toggle/v/:videoId").post(toggleVideoLike);
+likeRouter.route("/toggle/v/:videoId").post(toggleVideoLike);
 
 export default likeRouter;

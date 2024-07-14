@@ -12,7 +12,7 @@ commentRouter.use(verifyJWT , upload.none());
 
 commentRouter.route("/v/:videoId").post(addComment).get(getVideoComments);
 
-commentRouter.route("/c/commentId").delete(deleteComment).patch(updateComment);
+commentRouter.route("/c/:commentId").delete(deleteComment).patch(updateComment);
 
 
 export default commentRouter;

@@ -6,16 +6,19 @@ import { createTweet,
 
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
+import {upload} from "../middlewares/multer.middleware.js"
+
 const tweetRouter = Router()
 
+tweetRouter.use(verifyJWT, upload.none());
+
 // Route to create a new tweet
-tweetRouter.post("/", verifyJWT ,createTweet);
+tweetRouter.route("/").post(createTweet);
 
 // Route to get tweets of a specific user
-tweetRouter.get("/user/:userId", verifyJWT , getUserTweets);
+tweetRouter.route("/user/:userId").get(getUserTweets);
 
 // Route to update or delete a specific tweet
-tweetRouter.patch("/:tweetId", verifyJWT , updateTweet);
-tweetRouter.delete("/:tweetId", verifyJWT , deleteTweet);
+tweetRouter.route("/:tweetId").patch(updateTweet).delete(deleteTweet);
 
 export default tweetRouter;

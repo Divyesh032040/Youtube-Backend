@@ -12,7 +12,7 @@ import { upload } from "../middlewares/multer.middleware.js";
 
 const playlistRouter = Router();
 
-playlistRouter.use(verifyJWT,upload.none())  // Apply verifyJWT middleware to all routes in this file 
+playlistRouter.use(verifyJWT,upload.none())  
 
 playlistRouter.route("/").post(createPlaylist)
 

@@ -13,18 +13,18 @@ const createPlaylist = asyncHandler(async (req, res) => {
         throw new ApiError(400,"both fields are required");
     }
 
-    const playlist = await Playlist.create({
+    const _playlist = await playList.create({
         name,
         description,
         owner:req.user?._id
     });
 
-    if(!playList){
+    if(!_playlist){
         throw new ApiError(400,"failed to create playlist ");
     }
 
     return res.status(200).json(
-        new ApiResponse(200, playlist ,"playlist created successfully")
+        new ApiResponse(200, _playlist ,"playlist created successfully")
     )
 })
 
@@ -35,16 +35,16 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
         throw new ApiError(400,"invalid user id");
     }
 
-    const userPlaylist = await Playlist.aggregate([
+    const userPlaylist = await playList.aggregate([
         {
             $match:{
-                owner : mongoose.Types.ObjectId(userId)
+                owner : new mongoose.Types.ObjectId(userId)
             }
         },
         {
             $lookup:{
-                from:"videos",
-                localField:"videos",
+                from:"video",
+                localField:"video",
                 foreignField:"_id",
                 as:"videos"
             }
@@ -52,10 +52,10 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
         {
             $addFields:{
                 totalVideos:{
-                    $size:"videos"
+                    $size:"$videos"
                 },
                 totalViews:{
-                    $sum:"videos.views"
+                    $sum:"$videos.views"
                 }
             }
         },
@@ -78,85 +78,21 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
 const getPlaylistById = asyncHandler(async (req, res) => {
     const {playlistId} = req.params
    
-    if(!isValidObjectId(playlistId)){
-        throw new ApiError(400,"invalid Playlist id");
-    }
-
-    const Playlist = await Playlist.findById(playlistId);
-
-    if(!Playlist){
-        throw new ApiError(400,"playlist not found");
-    }
-
-    const playListVideo = playList.aggregate([
-        {
-            $match:{
-                _id : new mongoose.Types.ObjectId(playlistId)
-            }
-        },{
-            $lookup:{
-                from:"videos",
-                foreignField:"_id",
-                localField:"videos",
-                as:"videos"
-            }
-        },
-        {
-            $match:{
-                isPublished : true
-            }
-        },
-        {
-            $lookup:{
-                from:"User",
-                foreignField:"_id",
-                localField:"owner",
-                as:"owner"
-            }
-        },
-        {
-            $addFields:{
-                totalVideos : {
-                    $size : "$videos"
-                } , 
-                totalViews : {
-                    $sum : "$videos.views"
-                },
-                owner : {
-                    $first:"$owner"
-                }
-            }
-        },
-        {
-            $project:{
-                name: 1,
-                description: 1,
-                createdAt: 1,
-                updatedAt: 1,
-                totalVideos: 1,
-                totalVi :1,
-                videos:{
-                     _id: 1,
-                    "videoFile.url": 1,
-                    "thumbnail.url": 1,
-                    title: 1,
-                    description: 1,
-                    duration: 1,
-                    createdAt: 1,
-                    views: 1
-                },
-                owner:{
-                    username :1,
-                    fullName:1,
-                    "avatar.url":1
-                }
-            }
+   
+        if (!isValidObjectId(playlistId)) {
+          throw new ApiError(400, "Invalid PlaylistId");
         }
-    ])
+        const playlist = await playList.findOne({ _id: playlistId }).populate({
+          path: "video",
+          populate: { path: "owner", select: "username fullname avatar" },
+        });
+        if (!playlist) {
+          throw new ApiError(404, "Playlist not found");
+        }
 
     return res
     .status(200)
-    .json(new ApiResponse(200,playListVideo,"videoPlaylist fetched successfully"))
+    .json(new ApiResponse(200,playlist,"videoPlaylist fetched successfully"))
     
 })
 
@@ -167,10 +103,10 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
         throw new ApiError(400,"booth fields are required")
     }
 
-    const playList = await Playlist.findById(playlistId)
+    const _playList = await playList.findById(playlistId)
     const _video = await video.findById(videoId)
 
-    if(!playList){
+    if(!_playList){
         throw new ApiError(400,"invalid playlist id")
     }
     if(!_video){
@@ -178,15 +114,15 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
     }
 
     if(
-        playList.owner?.toString() && _video.owner?.toString() != req.user?._id.toString()
+        _playList.owner?.toString() && _video.owner?.toString() != req.user?._id.toString()
     ){
         throw new ApiError(400,"owner can add video to their playlist")
     }
 
-    const updatedPlaylist = await Playlist.findByIdAndUpdate(
-        Playlist?._id ,
+    const updatedPlaylist = await playList.findByIdAndUpdate(
+        _playList?._id ,
         {
-            $addToSet : {videos : videoId}
+            $addToSet : {video : videoId}
         },
         {new : true}
 
@@ -207,25 +143,25 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
         throw new ApiError(400,"both fields are required")
     }
 
-    const playList = await Playlist.findById(playlistId)
+    const _playList = await playList.findById(playlistId)
     const _video = await video.findById(videoId)
 
-    if(!playList){
+    if(!_playList){
         throw new ApiError(400,"invalid playlist id")
     }
     if(!_video){
         throw new ApiError(400,"invalid video id")
     }
 
-    if(playList.owner?._id.toString() && _video.owner?._id.toString() != req.user?._id){
+    if(_playList.owner?._id.toString() && _video.owner?._id.toString() != req.user?._id){
         throw new ApiError(400,"owner can add remove video from their playlist")
     }
 
-    const updatedPlaylist = await Playlist.findByIdAndUpdate(
+    const updatedPlaylist = await playList.findByIdAndUpdate(
         playlistId ,
         {
             $pull: {
-                videos : videoId
+                video : videoId
             }
         },
         {new:true}
@@ -242,17 +178,17 @@ const deletePlaylist = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Invalid playlist ID');
     }
 
-    const playlist = await Playlist.findById(playlistId);
+    const _playlist = await playList.findById(playlistId);
 
-    if (!playlist) {
+    if (!_playlist) {
         throw new ApiError(404, 'Playlist not found');
     }
 
-    if (playlist.owner.toString() !== req.user?._id.toString()) {
+    if (_playlist.owner.toString() !== req.user?._id.toString()) {
         throw new ApiError(403, 'Only the owner can delete this playlist');
     }
 
-    await Playlist.findByIdAndDelete(playlist._id);
+    await playList.findByIdAndDelete(_playlist._id);
 
     return res.status(200).json(new ApiResponse(200, {}, 'Playlist deleted successfully'));
 });
@@ -265,16 +201,16 @@ const updatePlaylist = asyncHandler(async (req, res) => {
         throw new ApiError(400,"invalid playlistId")
     }
     if(!name || !description){
-        throw new ApiError(400 , "both description and ame are required")
+        throw new ApiError(400 , "both name and description are required")
     }
 
-    const playlist = await Playlist.findById(playlistId);
+    const playlist = await playList.findById(playlistId);
 
     if(!playlist){
         throw new ApiError(400 , "invalid playlistId")
     }
 
-    const updatedPlaylist = await Playlist.findByIdAndUpdate(
+    const updatedPlaylist = await playList.findByIdAndUpdate(
         playlist?._id,
         {
             $set:{name,description}

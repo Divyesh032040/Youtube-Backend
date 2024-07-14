@@ -46,7 +46,7 @@ const registerUser = asyncHandler(async (req,res) => {
     //handle images : avatar
     const avatarLocalPath = req.files?.avatar?.[0]?.path;   //multer adds files
 
-    console.log(avatarLocalPath)
+    //console.log(avatarLocalPath)
 
     
    // const coverImageLocalPath = req.files?.coverimage[0]?.path
@@ -114,14 +114,11 @@ const LoginUser = asyncHandler(async(req,res)=>{
   }
 
   const storedHash = DBuser.password;
-  console.log(`Stored hashed password: ${storedHash}`);
+  //console.log(`Stored hashed password: ${storedHash}`);
 
    //check password
-  // const isPasswordValid = await DBuser.isPasswordCorrect(password)
+  
    const isPasswordValid = await DBuser.isPasswordCorrect(password);
-  console.log(`Entered password: ${password}`);
-  console.log(`Password comparison result: ${isPasswordValid}`);
-  // const isPasswordValid = await bcrypt.compareSync(password, storedHash);
 
 
    if(isPasswordValid == false){

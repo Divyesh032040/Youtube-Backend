@@ -1,12 +1,13 @@
 import mongoose, { isValidObjectId } from "mongoose"
-import {Video} from "../models/video.model.js"
+import {video} from "../models/video.model.js"
 import {Subscription} from "../models/subscription.model.js"
-import {ApiError} from "../utils/ApiError.js"
+import {ApiError} from "../utils/ErrorHandler.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
+import { User } from "../models/User.model.js"
 
 const getChannelStats = asyncHandler(async (req, res) => {
-    // TODO: Get the channel stats like total video views, total subscribers, total videos, total likes etc.
+    // Get the channel stats like total video views, total subscribers, total videos, total likes etc.
     const {channelId} = req.params;
 
     if(!isValidObjectId){
@@ -24,9 +25,9 @@ const getChannelStats = asyncHandler(async (req, res) => {
 
     //fetch video related stats
 
-    const video = await video.aggregate([
+    const _video = await video.aggregate([
         {
-            $match:{owner : channelId? mongoose.Types.ObjectId(channelId) : null }
+            $match:{owner : channelId? new mongoose.Types.ObjectId(channelId) : null }
         },
         {
             $lookup:{
@@ -57,9 +58,9 @@ const getChannelStats = asyncHandler(async (req, res) => {
     const channelStats = {
         subscribersCount: subscribersCount || 0,
         channelsSubscribedToCount: channelsSubscribedToCount || 0,
-        totalVideos: video[0]?.totalVideos || 0,
-        totalViews: video[0]?.totalViews || 0,
-        totalLikes: video[0]?.totalLikes || 0,
+        totalVideos: _video[0]?.totalVideos || 0,
+        totalViews: _video[0]?.totalViews || 0,
+        totalLikes: _video[0]?.totalLikes || 0,
       };
 
       return res
@@ -87,7 +88,7 @@ const getChannelVideos = asyncHandler(async (req, res) => {
   }
 
      // Fetch videos from the specified channel that are published
-  const videos = await Video.find({
+  const _videos = await video.find({
     owner: channelId,
     isPublished: true,
   }).populate(
@@ -108,14 +109,14 @@ const getChannelVideos = asyncHandler(async (req, res) => {
   );
 
   // Check if videos were found
-  if (!videos || videos.length === 0) {
+  if (!_videos || _videos.length === 0) {
     throw new ApiError(400, "No videos uploaded by the user");
   }
 
-  // Return the fetched videos in the response
+  
   return res
     .status(200)
-    .json(new ApiResponse(200, videos, "All videos fetched successfully"));
+    .json(new ApiResponse(200, _videos, "All videos fetched successfully"));
 })
 
 export {

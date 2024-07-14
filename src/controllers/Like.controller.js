@@ -3,7 +3,7 @@ import {Like} from "../models/like.model.js"
 import {ApiError} from "../utils/ErrorHandler.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
-import {video} from "../models/Video.model.js"
+
 
 const toggleVideoLike = asyncHandler(async (req, res) => {
     const {videoId} = req.params
@@ -51,7 +51,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
          likeBy : req.user?._id
     })
 
-    return res.status(200).json( new ApiResponse(200,{isLiked : true }))
+    return res.status(200).json( new ApiResponse(200,{isLiked : true },"comment liked successfully"))
 
 })
 
@@ -77,66 +77,41 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     return res.status(200).json( new ApiResponse(200,{isLiked:true}))
 }
 )
-const getLikedVideos = asyncHandler(async (req, res) => {
-    const user = req.user
-    const userId = user._id
-    const likedVideos = await video.aggregate([
-        {
-            $match:mongoose.Types.ObjectId(userId)
-        },
-        {
-            $lookup:{
-                from:"video",
-                foreignField:"_id",
-                localField:"video",
-                as:"likedVideo",
-                $pipeline : [
-                    {
-                        $lookup:{
-                            from:"User",
-                            localField:"owner",
-                            foreignField:"_id",
-                            as:"ownerDetails"
-                        }
-                    },
-                    {
-                        $unwind:"$ownerDetails"
-                    }
-                ]
-            }
-        },{
-            $unwind:"$likedVideo"
-        },
-        {
-            $sort:{
-                createdAt:-1
-            }
-        },{
-            $project:{
-                _id:0,
-                likedVideo:{
-                    _id:1,
-                   "videoFile.url":1,
-                    "thumbnail.url":1,
-                    owner: 1,
-                    title: 1,
-                    description: 1,
-                    views: 1,
-                    duration: 1,
-                    createdAt: 1,
-                    isPublished: 1,
-                    ownerDetails: {
-                        username: 1,
-                        fullName: 1,
-                        "avatar.url": 1,
-                    }
-                }
-            }
-        }
-    ])
-    return res.status(200).json( new ApiResponse(200,likedVideos,"videos fetched successfully"))
-})
 
+    const getLikedVideos = asyncHandler(async (req, res) => {
+        const userId = req.user?._id;
+        const userId_ = new mongoose.Types.ObjectId(userId)
+        let videos = await Like.aggregate(
+            [
+                {
+                    $match: {
+                        likeBy: userId_,
+                        video: {
+                        $exists: true,
+                        },
+                    },
+                },
+                {
+                    $lookup: {
+                    from: "video",
+                    localField: "video",
+                    foreignField: "_id",
+                     as: "videos",
+                              }
+                            }           
+           
+    ])
+        
+          if (videos.length < 1) {
+            throw new ApiError(400, "User has not liked any videos yet");
+          }
+        
+          return res
+            .status(200)
+            .json(
+              new ApiResponse(200, videos, "Liked videos fetched successfully")
+            );
+        });
 export {
     toggleCommentLike,
     toggleTweetLike,

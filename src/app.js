@@ -26,6 +26,8 @@ import commentRouter from "./routes/Comment.router.js"
 import healthCheckerRouter from "./routes/HealthChecker.router.js"
 import subscriberRouter from "./routes/Subscription.routes.js"
 import videoRouter from "./routes/Video.routes.js"
+import dashboardRouter from "./routes/DashBoard.routes.js"
+
 
 //route declaration 
 app.use("/api/v1/users",userRouter);
@@ -43,6 +45,8 @@ app.use("/api/v1/healthCheck" , healthCheckerRouter);
 app.use('/api/v1/subscription', subscriberRouter);
 
 app.use("/api/v1/video" , videoRouter)
+
+app.use("/api/v1/dashboard" , dashboardRouter)
 
 
 

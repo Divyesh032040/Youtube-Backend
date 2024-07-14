@@ -7,25 +7,28 @@ import {tweet} from "../models/Tweet.model.js"
 
 const createTweet = asyncHandler(async (req, res) => {
     //create tweet
-    const content = req.body
+  
+    const {content} = req.body
+  
     if(!content){
         return new ApiError(400 , "content is required");
     }
-    const tweet = await tweet.create({
+    console.log("test 1")
+    const _tweet = await tweet.create({
         content , 
         owner : req.user?._id 
     })
 
-    if(!tweet){
+    if(!_tweet){
         return new ApiError(500,"fail to create tweet please try again");
     }
 
-    return res.status(200).json(new ApiResponse(200, Tweet ,"Tweet created successfully"));
+    return res.status(200).json(new ApiResponse(200, _tweet ,"Tweet created successfully"));
 })
 
 const updateTweet = asyncHandler(async (req, res) => {
     // update tweet
-    const {tweetId} = req.params._id;
+    const {tweetId} = req.params;
     const {content} = req.body;
 
     if(!content){
@@ -36,13 +39,13 @@ const updateTweet = asyncHandler(async (req, res) => {
         throw new ApiError(400,"Content is not provided");
     }
 
-    const tweet = await tweet.findById(tweetId);
+    const _tweet = await tweet.findById(tweetId);
 
-    if(!tweet){
+    if(!_tweet){
        throw new ApiError(400,"tweet not found")
     }
     //validate tweet owner
-    if(tweet?.owner.toString() != req.user?._id.toString()){
+    if(_tweet?.owner.toString() != req.user?._id.toString()){
         throw new ApiError(400,"only owner can edit there tweet")
     }
 
@@ -78,7 +81,10 @@ const deleteTweet = asyncHandler(async (req, res) => {
     if(!isValidObjectId(tweetId)){
         throw new ApiError(400,"invalid tweetID")
     }
-    if(req.params?.owner.toString() != req.user?._id.toString()){
+
+    const _tweet = await tweet.findById(tweetId);
+
+    if(_tweet.owner.toString() != req.user?._id.toString()){
         throw new ApiError(400,"only owner can delete tweet")
     }
 
@@ -107,51 +113,47 @@ const getUserTweets = asyncHandler(async (req, res) => {
                 foreignField:"_id",
                 as:"userDetails",
 
-                $pipeline : [
+                pipeline : [
                     {
                         $project:{
                             username : 1 ,
-                            avatar : 1
+                            "avatar.url" : 1
                         }
                     }
                 ]  
             }
         },
         {
-            $lookup:{
-                from:"Like",
-                localField:"_id",
-                foreignField:"Likes",
-                as:"likeDetail",
-
-                $pipeline:[
+            $lookup: {
+                from: "likes",
+                localField: "_id",
+                foreignField: "tweet",
+                as: "likeDetails",
+                pipeline: [
                     {
-                        $project:{
-                            likeBy:1
-                        }
+                        $project: {
+                            likedBy: 1,
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            $addFields: {
+                likesCount: {
+                    $size: "$likeDetails",
+                },
+                ownerDetails: {
+                    $first: "$ownerDetails",
+                },
+                isLiked: {
+                    $cond: {
+                        if: {$in: [req.user?._id, "$likeDetails.likedBy"]},
+                        then: true,
+                        else: false
                     }
-                ]
-            }
-        },
-        {
-            $addFields:{
-                likesCount:{
-                    $size:"likeDetail"
-                },
-                ownerDetail:{
-                    $first:"$ownerDetail"
-                },
-                isLiked:{
-                    $cond:{$in:[req.user?._id,"$likeDetails.likesBy"]},
-                    then:true,
-                    else:false
                 }
-            }
-        },
-        {
-            $sort:{
-                createdAt:-1
-            }
+            },
         },
         {
             $project:{
