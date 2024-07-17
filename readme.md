@@ -141,7 +141,7 @@ This is a mini ``YOUTUBE+TBACKEND`` project that covers the major functionalitie
     # Start the server using npm
     npm run dev
     ```
-    Server will start on Port:3000
+    Server will start on Port:8000
 
 ## Contributing
 
